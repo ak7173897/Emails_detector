@@ -1,0 +1,24 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run Email Detector",
+      "type": "shell",
+      "command": ".venv\\Scripts\\python.exe -m flask run --host=0.0.0.0 --port=5000",
+      "options": {
+        "cwd": "${workspaceFolder}/email-detector",
+        "env": {
+          "FLASK_APP": "src.wsgi:application",
+          "FLASK_ENV": "development",
+          "SECRET_KEY": "dev-secret-key-32-characters!!"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "focus": true
+      },
+      "problemMatcher": []
+    }
+  ]
+}

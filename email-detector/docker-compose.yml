@@ -1,0 +1,52 @@
+# ==============================================================================
+# AI Email Security Detector - Simplified Docker Compose
+# ==============================================================================
+# Single container setup - no Redis or Nginx needed
+# Uses in-memory rate limiting and direct Gunicorn serving
+# ==============================================================================
+
+services:
+  # Main email detector application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_DATE: ${BUILD_DATE:-}
+        VERSION: ${VERSION:-1.0.0}
+        VCS_REF: ${VCS_REF:-}
+    container_name: email-detector
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-5000}:5000"
+    environment:
+      # Flask configuration
+      FLASK_ENV: ${FLASK_ENV:-production}
+      # SECRET_KEY MUST be set in .env file - no hardcoded default
+      SECRET_KEY: ${SECRET_KEY:?SECRET_KEY must be set in .env file}
+      
+      # Security settings
+      CONFIDENCE_THRESHOLD: ${CONFIDENCE_THRESHOLD:-70.0}
+      MAX_EMAIL_LENGTH: ${MAX_EMAIL_LENGTH:-50000}
+      MAX_CONTENT_LENGTH: ${MAX_CONTENT_LENGTH:-1048576}
+      
+      # Logging (use stdout/stderr for Docker)
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      
+      # Worker settings
+      WORKERS: ${WORKERS:-4}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+      - /app/uploads:mode=755
+      - /app/logs:mode=755
+      - /app/feedback:mode=755
+    volumes:
+      - ./models:/app/models:ro

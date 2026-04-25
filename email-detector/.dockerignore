@@ -1,0 +1,219 @@
+# ==============================================================================
+# .dockerignore - Files and directories to exclude from Docker context
+# ==============================================================================
+# Reduces build context size and prevents sensitive files from being copied
+# ==============================================================================
+
+# Old structure (excluded)
+backend/
+train_model.py
+test_model.py
+wsgi.py
+gunicorn_config.py
+docker-compose.yml
+nginx.conf
+Dockerfile
+docker-entrypoint.sh
+build-docker.ps1
+build-docker.sh
+run-docker.ps1
+run-docker.sh
+
+# Version control
+.git
+.gitignore
+.github/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.coverage
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# IDE and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment files (docker-compose handles these)
+.env.local
+.env.development
+.env.test
+.env.production
+.env.*.local
+.env.docker
+.env.template
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Application specific
+uploads/
+feedback/
+*.sqlite
+*.db
+
+# Old/unused model files
+model.pkl
+
+# Nginx configs (handled by docker-compose volume mount or separate container)
+nginx-single.conf
+supervisord.conf
+
+# Docker files (don't copy into container)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Shell scripts (except docker-entrypoint.sh which is needed)
+*.sh
+!docker-entrypoint.sh
+
+# Batch files (development only, not needed in container)
+*.bat
+
+# Deployment Python scripts (not needed in container)
+check_errors.py
+fix_errors.py
+deployment_test.py
+validate_final.py
+validate_structure.py
+main.py
+
+# Documentation (most not needed in container, keep README.md for reference)
+docs/
+CHANGELOG*
+LICENSE
+CONTRIBUTING*
+
+# Exclude all the debugging/deployment MD files
+*FIXES*.md
+*DEBUG*.md
+*DEPLOY*.md
+*STRUCTURE*.md
+*DOCKER*.md
+*SINGLE*.md
+*VERIFY*.md
+*CHECKLIST*.md
+*STATUS*.md
+*COMPARISON*.md
+*STANDARD*.md
+*ORGANIZATION*.md
+*QUICKSTART*.md
+*PRODUCTION*.md
+*STRUCTURED*.md
+*CLEAN*.md
+*COMPLETE*.md
+*FINAL*.md
+PROJECT_STRUCTURE.md
+
+# Configuration files (handled by docker-compose)
+config.ini
+config.json
+
+# Nginx config needs to be copied
+# Gunicorn config needs to be copied
+
+# Testing (exclude test files but keep test_model.py for diagnostics)
+test/
+tests/
+*_test.py
+
+# Keep test_model.py - it's useful for diagnostics
+
+# Security files
+*.key
+*.pem
+*.crt
+*.csr
+ssl/
+certs/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Cache directories
+.cache/
+node_modules/
+.npm
+.yarn/
+
+# Local development files
+local/
+dev/
+development/
+
+# Jupyter notebooks
+.ipynb_checkpoints
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json

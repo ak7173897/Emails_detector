@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>AI Email Security Detector</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- PARTICLE CANVAS BACKGROUND -->
+<canvas id="particleCanvas"></canvas>
+
+<!-- HEADER / NAV -->
+<header class="site-header" role="banner">
+    <div class="header-inner">
+        <div class="logo" aria-label="EmailShield AI">
+            <span class="logo-icon" aria-hidden="true">⬡</span>
+            <span class="logo-text">EmailShield<span class="logo-ai">AI</span></span>
+        </div>
+        <nav class="header-nav" role="navigation" aria-label="Main navigation">
+            <button class="nav-btn active" onclick="showSection('detector')" aria-label="Go to email detector" aria-current="page">Detector</button>
+            <button class="nav-btn" onclick="showSection('history')" aria-label="View analysis history">History <span class="badge" id="historyBadge" aria-label="Number of items in history">0</span></button>
+            <button class="nav-btn" onclick="showSection('dashboard')" aria-label="View analytics dashboard">Dashboard</button>
+            <button class="nav-btn" onclick="showSection('bulk')" aria-label="Bulk email analysis">Bulk Analyze</button>
+            <button class="nav-btn" onclick="showSection('about')" aria-label="Learn how it works">How It Works</button>
+        </nav>
+        <div class="header-controls">
+            <button class="theme-toggle" id="themeToggle" title="Toggle theme" aria-label="Toggle dark/light theme">
+                <span class="theme-icon" aria-hidden="true">◑</span>
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- HERO SECTION -->
+<section class="hero" id="heroSection">
+    <div class="hero-content">
+        <div class="hero-badge">
+            <span class="pulse-dot"></span>
+            Powered by Machine Learning
+        </div>
+        <h1 class="hero-title">
+            <span class="title-line">AI Email</span>
+            <span class="title-line accent">Security</span>
+            <span class="title-line">Detector</span>
+        </h1>
+        <p class="hero-subtitle">
+            Instantly detect spam, phishing, and AI generated malicious emails 
+            using advanced machine learning algorithms trained on thousands of real emails.
+        </p>
+        <div class="hero-stats">
+            <div class="stat">
+                <span class="stat-num">95%+</span>
+                <span class="stat-label">Accuracy</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat">
+                <span class="stat-num">4</span>
+                <span class="stat-label">Categories</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat">
+                <span class="stat-num">&lt;1s</span>
+                <span class="stat-label">Analysis</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- MAIN CONTENT SECTIONS -->
+<main class="main-container">
+
+    <!-- ─── DETECTOR SECTION ─────────────────────────── -->
+    <section id="section-detector" class="content-section active">
+        <div class="two-col-layout">
+
+            <!-- LEFT: Input Panel -->
+            <div class="panel input-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <span class="panel-icon">[EMAIL]</span>
+                        Email Analyzer
+                    </h2>
+                    <div class="panel-actions">
+                        <button class="action-btn" onclick="loadSample('safe')" title="Load safe email sample">Safe</button>
+                        <button class="action-btn" onclick="loadSample('spam')" title="Load spam sample">Spam</button>
+                        <button class="action-btn" onclick="loadSample('phishing')" title="Load phishing sample">Phish</button>
+                        <button class="action-btn danger" onclick="clearAll()" title="Clear all">X</button>
+                    </div>
+                </div>
+
+                <div class="input-area">
+                    <label class="input-label">Paste Email Content</label>
+                    <textarea 
+                        id="emailInput" 
+                        class="email-textarea"
+                        placeholder="Paste the full email content here including subject, body, and any suspicious links...
+
+Example: 'Dear user, your account has been compromised. Click here to verify your credentials immediately...'"
+                        spellcheck="false"
+                    ></textarea>
+                    <div class="input-meta">
+                        <span id="wordCount" class="word-count">0 words</span>
+                        <span class="input-hint">Minimum 10 characters required</span>
+                    </div>
+                </div>
+
+                <!-- File Upload -->
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="fileInput" accept=".txt,.eml" hidden onchange="handleFileUpload(event)">
+                    <div class="upload-inner" onclick="document.getElementById('fileInput').click()">
+                        <span class="upload-icon">[FILE]</span>
+                        <span class="upload-text">Drop .txt or .eml file here, or <strong>click to browse</strong></span>
+                    </div>
+                </div>
+
+                <button class="check-btn" id="checkBtn" onclick="analyzeEmail()">
+                    <span class="btn-icon">[SCAN]</span>
+                    <span class="btn-text">Analyze Email</span>
+                    <span class="btn-arrow">></span>
+                </button>
+            </div>
+
+            <!-- RIGHT: Results Panel -->
+            <div class="panel results-panel" id="resultsPanel">
+                <!-- DEFAULT STATE -->
+                <div class="results-default" id="resultsDefault">
+                    <div class="default-icon">[SHIELD]</div>
+                    <h3>Ready to Analyze</h3>
+                    <p>Paste an email on the left and click "Analyze Email" to instantly detect spam, phishing, and AI generated threats.</p>
+                    <div class="feature-grid">
+                        <div class="feature-item safe">
+                            <span>[SAFE]</span>
+                            <span>Safe</span>
+                        </div>
+                        <div class="feature-item spam">
+                            <span>[WARN]</span>
+                            <span>Spam</span>
+                        </div>
+                        <div class="feature-item phishing">
+                            <span>[DANGER]</span>
+                            <span>AI Phishing</span>
+                        </div>
+                        <div class="feature-item uncertain">
+                            <span>[?]</span>
+                            <span>Uncertain</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LOADING STATE -->
+                <div class="results-loading" id="resultsLoading" hidden>
+                    <div class="loader-container">
+                        <div class="neural-loader">
+                            <div class="nl-ring r1"></div>
+                            <div class="nl-ring r2"></div>
+                            <div class="nl-ring r3"></div>
+                            <div class="nl-core">AI</div>
+                        </div>
+                        <p class="loading-text" id="loadingText">Preprocessing text...</p>
+                        <div class="loading-steps">
+                            <div class="ls" id="ls1">⬡ Tokenizing</div>
+                            <div class="ls" id="ls2">⬡ Vectorizing</div>
+                            <div class="ls" id="ls3">⬡ Classifying</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RESULT STATE -->
+                <div class="results-content" id="resultsContent" hidden role="status" aria-live="polite" aria-atomic="true">
+                    <!-- Verdict Badge -->
+                    <div class="verdict-container">
+                        <div class="verdict-badge" id="verdictBadge">
+                            <span class="verdict-icon" id="verdictIcon" aria-hidden="true">[SAFE]</span>
+                            <div class="verdict-text">
+                                <span class="verdict-label">VERDICT</span>
+                                <span class="verdict-name" id="verdictName">Safe Email</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Confidence Meter -->
+                    <div class="confidence-section">
+                        <div class="conf-header">
+                            <span class="conf-label">Confidence Score</span>
+                            <span class="conf-value" id="confValue" aria-live="polite">0%</span>
+                        </div>
+                        <div class="conf-bar-bg" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                            <div class="conf-bar-fill" id="confBarFill"></div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <p class="result-description" id="resultDescription"></p>
+
+                    <!-- Probability Breakdown -->
+                    <div class="prob-section">
+                        <h4 class="section-label">Class Probabilities</h4>
+                        <div class="prob-bars" id="probBars" role="list" aria-label="Classification probabilities"></div>
+                    </div>
+
+                    <!-- Risk Features -->
+                    <div class="features-section">
+                        <h4 class="section-label">Risk Indicators</h4>
+                        <ul class="risk-list" id="riskList" aria-label="Detected risk indicators"></ul>
+                    </div>
+
+                    <!-- Meta Info -->
+                    <div class="result-meta" aria-label="Analysis metadata">
+                        <span id="metaWords">0 words</span>
+                        <span aria-hidden="true">|</span>
+                        <span id="metaTime">00:00:00</span>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="result-actions">
+                        <button class="result-action-btn" onclick="copyResults()" title="Copy results to clipboard" aria-label="Copy analysis results">
+                            <span class="action-icon">[COPY]</span>
+                            <span>Copy Results</span>
+                        </button>
+                        <button class="result-action-btn" onclick="exportJSON()" title="Export as JSON" aria-label="Export results as JSON file">
+                            <span class="action-icon">[JSON]</span>
+                            <span>Export JSON</span>
+                        </button>
+                        <button class="result-action-btn" onclick="exportCSV()" title="Export as CSV" aria-label="Export results as CSV file">
+                            <span class="action-icon">[CSV]</span>
+                            <span>Export CSV</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ERROR STATE -->
+                <div class="results-error" id="resultsError" hidden role="alert" aria-live="assertive">
+                    <span class="error-icon" aria-hidden="true">[ERROR]</span>
+                    <h3>Analysis Failed</h3>
+                    <p id="errorMessage">An unexpected error occurred.</p>
+                    <button class="retry-btn" onclick="retryAnalysis()" aria-label="Retry email analysis">Try Again</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HISTORY SECTION -->
+    <section id="section-history" class="content-section" hidden>
+        <div class="section-header-row">
+            <h2 class="section-title">Analysis History</h2>
+            <div class="history-controls">
+                <div class="search-box">
+                    <span class="search-icon">[SEARCH]</span>
+                    <input type="text" id="historySearch" placeholder="Search history..." onkeyup="filterHistory()" aria-label="Search analysis history">
+                </div>
+                <select id="historyFilter" onchange="filterHistory()" aria-label="Filter by result type">
+                    <option value="all">All Results</option>
+                    <option value="safe">Safe Only</option>
+                    <option value="spam">Spam Only</option>
+                    <option value="phishing">Phishing Only</option>
+                    <option value="uncertain">Uncertain Only</option>
+                </select>
+                <button class="action-btn" onclick="exportHistoryCSV()" title="Export history as CSV">Export CSV</button>
+                <button class="action-btn danger" id="clearHistoryBtn" title="Clear all history">Clear All</button>
+            </div>
+        </div>
+        <div class="history-stats" id="historyStats">
+            <div class="stat-item safe"><span class="stat-count" id="statSafe">0</span> Safe</div>
+            <div class="stat-item spam"><span class="stat-count" id="statSpam">0</span> Spam</div>
+            <div class="stat-item phishing"><span class="stat-count" id="statPhishing">0</span> Phishing</div>
+            <div class="stat-item uncertain"><span class="stat-count" id="statUncertain">0</span> Uncertain</div>
+        </div>
+        <div id="historyList" class="history-list">
+            <div class="empty-state">
+                <span>📋</span>
+                <p>No emails analyzed yet. Start by pasting an email in the detector.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- DASHBOARD SECTION -->
+    <section id="section-dashboard" class="content-section" hidden>
+        <div class="dashboard-header">
+            <h2 class="section-title">Analytics Dashboard</h2>
+            <div class="dashboard-controls">
+                <select id="dashboardPeriod" onchange="updateDashboard()" aria-label="Select time period">
+                    <option value="7">Last 7 Days</option>
+                    <option value="30" selected>Last 30 Days</option>
+                    <option value="90">Last 90 Days</option>
+                    <option value="all">All Time</option>
+                </select>
+                <button class="action-btn" onclick="refreshDashboard()">Refresh</button>
+            </div>
+        </div>
+        
+        <div class="dashboard-grid">
+            <!-- Summary Cards -->
+            <div class="dash-card summary-card">
+                <div class="dash-card-header">
+                    <span class="dash-icon">[TOTAL]</span>
+                    <h3>Total Analyzed</h3>
+                </div>
+                <div class="dash-value" id="dashTotal">0</div>
+                <div class="dash-trend" id="dashTotalTrend"></div>
+            </div>
+            
+            <div class="dash-card summary-card safe">
+                <div class="dash-card-header">
+                    <span class="dash-icon">[SAFE]</span>
+                    <h3>Safe Emails</h3>
+                </div>
+                <div class="dash-value" id="dashSafe">0</div>
+                <div class="dash-percent" id="dashSafePercent">0%</div>
+            </div>
+            
+            <div class="dash-card summary-card spam">
+                <div class="dash-card-header">
+                    <span class="dash-icon">[SPAM]</span>
+                    <h3>Spam Detected</h3>
+                </div>
+                <div class="dash-value" id="dashSpam">0</div>
+                <div class="dash-percent" id="dashSpamPercent">0%</div>
+            </div>
+            
+            <div class="dash-card summary-card phishing">
+                <div class="dash-card-header">
+                    <span class="dash-icon">[PHISH]</span>
+                    <h3>Phishing Blocked</h3>
+                </div>
+                <div class="dash-value" id="dashPhishing">0</div>
+                <div class="dash-percent" id="dashPhishingPercent">0%</div>
+            </div>
+            
+            <!-- Charts Section -->
+            <div class="dash-card chart-card wide">
+                <div class="dash-card-header">
+                    <span class="dash-icon">[CHART]</span>
+                    <h3>Classification Distribution</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="dash-card chart-card wide">
+                <div class="dash-card-header">
+                    <span class="dash-icon">[TREND]</span>
+                    <h3>Analysis Trend</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Average Confidence -->
+            <div class="dash-card">
+                <div class="dash-card-header">
+                    <span class="dash-icon">[CONF]</span>
+                    <h3>Avg Confidence</h3>
+                </div>
+                <div class="dash-value" id="dashAvgConf">0%</div>
+                <div class="confidence-breakdown">
+                    <div class="conf-item">High (&gt;90%): <span id="confHigh">0</span></div>
+                    <div class="conf-item">Medium (70-90%): <span id="confMed">0</span></div>
+                    <div class="conf-item">Low (&lt;70%): <span id="confLow">0</span></div>
+                </div>
+            </div>
+            
+            <!-- Risk Summary -->
+            <div class="dash-card">
+                <div class="dash-card-header">
+                    <span class="dash-icon">[RISK]</span>
+                    <h3>Risk Summary</h3>
+                </div>
+                <div class="risk-meter">
+                    <div class="risk-level" id="riskLevel">LOW</div>
+                    <div class="risk-bar">
+                        <div class="risk-fill" id="riskFill"></div>
+                    </div>
+                </div>
+                <div class="risk-note" id="riskNote">Based on recent threat detection rate</div>
+            </div>
+            
+            <!-- Recent Threats -->
+            <div class="dash-card wide">
+                <div class="dash-card-header">
+                    <span class="dash-icon">[ALERT]</span>
+                    <h3>Recent Threats</h3>
+                </div>
+                <div class="threat-list" id="threatList">
+                    <div class="empty-state">No recent threats detected</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BULK ANALYSIS SECTION -->
+    <section id="section-bulk" class="content-section" hidden>
+        <div class="section-header-row">
+            <h2 class="section-title">Bulk Email Analysis</h2>
+            <div class="bulk-controls">
+                <button class="action-btn" onclick="clearBulkResults()">Clear Results</button>
+                <button class="action-btn" onclick="exportBulkCSV()" id="exportBulkBtn" disabled>Export All CSV</button>
+            </div>
+        </div>
+        
+        <div class="bulk-container">
+            <div class="bulk-input-panel">
+                <div class="bulk-upload-area" id="bulkUploadArea">
+                    <input type="file" id="bulkFileInput" accept=".txt,.eml,.csv" multiple hidden onchange="handleBulkUpload(event)">
+                    <div class="upload-inner" onclick="document.getElementById('bulkFileInput').click()">
+                        <span class="upload-icon">[FILES]</span>
+                        <span class="upload-text">Drop multiple .txt, .eml, or .csv files here</span>
+                        <span class="upload-hint">Or click to browse (max 50 files)</span>
+                    </div>
+                </div>
+                
+                <div class="bulk-text-input">
+                    <label class="input-label">Or paste multiple emails (separate with a blank line or "---")</label>
+                    <textarea 
+                        id="bulkEmailInput" 
+                        class="email-textarea bulk-textarea"
+                        placeholder="Email 1 content here...
+
+Email 2 content here...
+
+Email 3 content here..."
+                    ></textarea>
+                </div>
+                
+                <button class="check-btn bulk-btn" id="bulkAnalyzeBtn" onclick="analyzeBulk()">
+                    <span class="btn-icon">[BATCH]</span>
+                    <span class="btn-text">Analyze All Emails</span>
+                    <span class="btn-arrow">></span>
+                </button>
+            </div>
+            
+            <div class="bulk-results-panel">
+                <div class="bulk-progress" id="bulkProgress" hidden>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="bulkProgressFill"></div>
+                    </div>
+                    <span class="progress-text" id="bulkProgressText">0 / 0 analyzed</span>
+                </div>
+                
+                <div class="bulk-summary" id="bulkSummary" hidden>
+                    <div class="summary-stat safe">
+                        <span class="summary-count" id="bulkSafe">0</span>
+                        <span>Safe</span>
+                    </div>
+                    <div class="summary-stat spam">
+                        <span class="summary-count" id="bulkSpam">0</span>
+                        <span>Spam</span>
+                    </div>
+                    <div class="summary-stat phishing">
+                        <span class="summary-count" id="bulkPhishing">0</span>
+                        <span>Phishing</span>
+                    </div>
+                    <div class="summary-stat uncertain">
+                        <span class="summary-count" id="bulkUncertain">0</span>
+                        <span>Uncertain</span>
+                    </div>
+                </div>
+                
+                <div class="bulk-results-list" id="bulkResultsList">
+                    <div class="empty-state">
+                        <span>[BATCH]</span>
+                        <p>Upload files or paste emails to analyze multiple at once.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ABOUT SECTION -->
+    <section id="section-about" class="content-section" hidden>
+        <div class="about-grid">
+            <div class="about-card full-width">
+                <h3>What is EmailShield AI?</h3>
+                <p>EmailShield AI is an email safety assistant. You can paste any suspicious email and the system will label it as <strong>Safe</strong>, <strong>Spam</strong>, <strong>AI Phishing</strong>, or <strong>Uncertain</strong>.</p>
+            </div>
+
+            <div class="about-card full-width">
+                <h3>Phishing vs Spam (Important Difference)</h3>
+                <ul class="definitions-list" style="text-align: left; margin-left: 20px; list-style-type: disc;">
+                    <li style="margin-bottom: 10px;"><strong>Spam Email:</strong> Unwanted promotional or bulk messages. Usually annoying, sometimes risky, but often sent for marketing.</li>
+                    <li style="margin-bottom: 10px;"><strong>Phishing Email:</strong> A fake message designed to steal your personal data like passwords, OTPs, card details, or login access.</li>
+                    <li style="margin-bottom: 10px;"><strong>Simple rule:</strong> Spam wastes your time. Phishing can steal your identity, money, or account.</li>
+                </ul>
+            </div>
+            
+            <div class="about-card full-width">
+                <h3>How It Works (Simple Steps)</h3>
+                <div class="code-steps">
+                    <div class="code-step">
+                        <span class="step-num">1</span>
+                        <code>You add the email</code>
+                        <span class="step-desc">Paste the email text or upload a file. Include as much text as possible (subject + body) for better results.</span>
+                    </div>
+                    <div class="code-step">
+                        <span class="step-num">2</span>
+                        <code>The system checks warning signs</code>
+                        <span class="step-desc">It looks for signs like urgent pressure, fake account alerts, suspicious links, and requests for private information.</span>
+                    </div>
+                    <div class="code-step">
+                        <span class="step-num">3</span>
+                        <code>AI compares with known patterns</code>
+                        <span class="step-desc">Your email is compared with patterns learned from many real examples of safe, spam, and phishing messages.</span>
+                    </div>
+                    <div class="code-step">
+                        <span class="step-num">4</span>
+                        <code>You see the result</code>
+                        <span class="step-desc">The detector shows one label: Safe, Spam, AI Phishing, or Uncertain, along with a confidence score.</span>
+                    </div>
+                    <div class="code-step">
+                        <span class="step-num">5</span>
+                        <code>You take safe action</code>
+                        <span class="step-desc">If it is phishing or uncertain, do not click links. Open the official website directly and verify there.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="about-card">
+                <h3>How Spam Looks in Real Life</h3>
+                <p>Spam messages often push offers like "Win now!", "Limited time deal", or repeated promotions you never asked for. They may contain too many links, too many exclamation marks, and generic greetings.</p>
+            </div>
+            <div class="about-card">
+                <h3>How Phishing Looks in Real Life</h3>
+                <p>Phishing emails pretend to be from banks, payment apps, delivery services, or your company. They try to scare you ("account blocked") or rush you ("verify in 10 minutes") so you share private information.</p>
+            </div>
+            <div class="about-card">
+                <h3>Uncertainty Detection</h3>
+                <p>When the model confidence is below 70%, it returns <strong>"Uncertain"</strong> instead of making a potentially wrong prediction. This helps reduce false positives and encourages manual review of edge cases.</p>
+            </div>
+            <div class="about-card">
+                <h3>How to Read the Confidence Score</h3>
+                <p><strong>90-100%</strong> = strong match. <strong>70-89%</strong> = likely, but double-check important emails. <strong>Below 70%</strong> = uncertain, so verify manually before you trust the email.</p>
+            </div>
+            <div class="about-card full-width">
+                <h3>Future Scope</h3>
+                <p>The proposed system can be further enhanced by integrating it directly with email platforms such as Gmail, enabling automated scanning of incoming emails without requiring manual copy-paste by the user. This can be achieved through secure API integration, allowing the system to access and analyze emails in real time. Such an extension would improve usability, provide continuous monitoring, and deliver instant classification results for spam and phishing threats, making the system more efficient and practical for real-world deployment.</p>
+            </div>
+            <div class="about-card full-width centered-card">
+                <h3>Privacy and Safety Notes</h3>
+                <p>This detector is a decision support tool, not a replacement for security policy. Always avoid sharing passwords, OTPs, or bank details by email. For suspicious account notices, open official websites directly instead of clicking email links.</p>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+    <div class="footer-inner">
+        <span>⬡ EmailShield<strong>AI</strong> | Built with Flask + Scikit learn</span>
+        <span>Categories: Safe · Spam · AI Phishing · Uncertain</span>
+    </div>
+</footer>
+
+<script src="{{ url_for('static', filename='secure_script.js') }}"></script>
+</body>
+</html>
